@@ -1,0 +1,8 @@
+Git Commit Info
+================
+Commit Name: Initial commit of BioAlert project (ESP32 firmware & Python server)
+Date:        Thu Jul 2 22:07:45 2026 +0100
+Commit ID:   10bc3e48a1ebaf291dfde40ba90c1ce97cd9073f
+
+To roll back to this commit in the future, you can run the following command in your terminal:
+git reset --hard 10bc3e48a1ebaf291dfde40ba90c1ce97cd9073f
