@@ -1,5 +1,13 @@
 Git Commit Info
 ================
+Commit Name: Fix camera buffer stale image, add power-on flash, update fallback IP
+Date:        Sat Jul 4 11:51:11 2026 +0100
+Commit ID:   5b16c58fa9cb8d8a9f7590febd7744cd660b9ee5
+
+To roll back to this commit in the future, you can run the following command in your terminal:
+git reset --hard 5b16c58fa9cb8d8a9f7590febd7744cd660b9ee5
+
+------------------------------------------------------
 Commit Name: Initial commit of BioAlert project (ESP32 firmware & Python server)
 Date:        Thu Jul 2 22:07:45 2026 +0100
 Commit ID:   10bc3e48a1ebaf291dfde40ba90c1ce97cd9073f
