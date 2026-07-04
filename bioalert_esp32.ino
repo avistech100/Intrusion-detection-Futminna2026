@@ -6,14 +6,11 @@
 const char* ssid      = "Galaxy S20 5G f003";
 const char* password  = "nxwe58332";
 
-// ── mDNS hostname of the Flask server ──────────────────────────────
-// Matches the Windows network hostname of your local PC. The ESP32 looks
-// this up by name on the network using mDNS, so it doesn't matter what IP
-// your laptop ends up with - no more manual static IP configuration needed.
+
 const char* MDNS_SERVER_HOSTNAME = "DESKTOP-2H4S3PI";   // resolves "DESKTOP-2H4S3PI.local"
 const int   SERVER_PORT          = 5000;
 const char* SERVER_PATH          = "/classify";
-const char* FALLBACK_SERVER_IP   = "192.168.6.240";     // Fallback static IP if mDNS fails (common on mobile hotspots)
+const char* FALLBACK_SERVER_IP   = "192.168.65.240";     // Fallback static IP if mDNS fails (common on mobile hotspots)
 
 // Cached after a successful mDNS lookup. Cleared (forcing a fresh
 // lookup) whenever a request fails, in case the laptop's IP changed.
@@ -212,7 +209,12 @@ bool captureAndClassify() {
   delay(300);
   digitalWrite(BUZZER_PIN, LOW);
 
+  // Flush the stale frame buffer to prevent lag/old images
   camera_fb_t *fb = esp_camera_fb_get();
+  if (fb) esp_camera_fb_return(fb);
+
+  // Capture the actual fresh frame
+  fb = esp_camera_fb_get();
   if (!fb) {
     Serial.println("Camera capture failed");
     return false;
@@ -262,6 +264,9 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(LED_PIN, OUTPUT);
+  // Power-on flash
+  digitalWrite(LED_PIN, HIGH);
+  delay(1000);
   digitalWrite(LED_PIN, LOW);
 
   pinMode(BUZZER_PIN, OUTPUT);
