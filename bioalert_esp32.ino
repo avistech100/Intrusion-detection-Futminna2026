@@ -2,15 +2,15 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <HTTPClient.h>
+#include <WiFiManager.h>
+#include <Preferences.h>
 
-const char* ssid      = "Galaxy S20 5G f003";
-const char* password  = "nxwe58332";
+Preferences preferences;
 
-
-const char* MDNS_SERVER_HOSTNAME = "DESKTOP-2H4S3PI";   // resolves "DESKTOP-2H4S3PI.local"
+String mDNSServerHostname = "DESKTOP-2H4S3PI";   // Will be updated from Preferences/WiFiManager
 const int   SERVER_PORT          = 5000;
 const char* SERVER_PATH          = "/classify";
-const char* FALLBACK_SERVER_IP   = "192.168.65.240";     // Fallback static IP if mDNS fails (common on mobile hotspots)
+String fallbackServerIP = "192.168.65.240"; // Will be updated from Preferences/WiFiManager
 
 // Cached after a successful mDNS lookup. Cleared (forcing a fresh
 // lookup) whenever a request fails, in case the laptop's IP changed.
@@ -19,6 +19,7 @@ String resolvedServerIP = "";
 #define PIR_PIN    13
 #define BUZZER_PIN 12
 #define LED_PIN    4
+#define PIR_LED_PIN 2
 
 #define SIM800_TX  14
 #define SIM800_RX  15
@@ -110,7 +111,7 @@ void ensureWiFi() {
 
   Serial.println("WiFi lost. Attempting reconnect...");
   WiFi.disconnect();
-  WiFi.begin(ssid, password);
+  WiFi.begin();
 
   unsigned long start = millis();
   while (WiFi.status() != WL_CONNECTED) {
@@ -132,18 +133,18 @@ void ensureWiFi() {
 // ── Looks up the Flask server's current IP via mDNS ──────
 // Caches the result in resolvedServerIP on success. Falls back to static IP on failure.
 bool resolveServerIP() {
-  Serial.println("Resolving '" + String(MDNS_SERVER_HOSTNAME) + ".local' via mDNS...");
-  IPAddress ip = MDNS.queryHost(MDNS_SERVER_HOSTNAME, MDNS_QUERY_TIMEOUT_MS);
+  Serial.println("Resolving '" + mDNSServerHostname + ".local' via mDNS...");
+  IPAddress ip = MDNS.queryHost(mDNSServerHostname.c_str(), MDNS_QUERY_TIMEOUT_MS);
 
   if (ip == IPAddress(0, 0, 0, 0)) {
-    Serial.println("  -> mDNS lookup failed. Falling back to static IP: " + String(FALLBACK_SERVER_IP));
+    Serial.println("  -> mDNS lookup failed. Falling back to static IP: " + fallbackServerIP);
     
     // Blink LED once to indicate fallback is active
     digitalWrite(LED_PIN, HIGH);
     delay(500);
     digitalWrite(LED_PIN, LOW);
     
-    resolvedServerIP = String(FALLBACK_SERVER_IP);
+    resolvedServerIP = fallbackServerIP;
     return true;
   }
 
@@ -273,19 +274,57 @@ void setup() {
   digitalWrite(BUZZER_PIN, LOW);
 
   pinMode(PIR_PIN, INPUT);
+  
+  pinMode(PIR_LED_PIN, OUTPUT);
+  digitalWrite(PIR_LED_PIN, LOW);
 
   SIM800.begin(9600, SERIAL_8N1, SIM800_RX, SIM800_TX);
   delay(3000);
 
   initCamera();
 
-  Serial.println("Connecting to WiFi...");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("No WiFi yet — retrying in 10s...");
-    delay(WIFI_RETRY_INTERVAL);
+  Serial.println("Loading saved preferences...");
+  preferences.begin("bioalert", false);
+  fallbackServerIP = preferences.getString("serverIP", "192.168.65.240");
+  mDNSServerHostname = preferences.getString("mdnsName", "DESKTOP-2H4S3PI");
+
+  Serial.println("Starting WiFiManager...");
+  WiFiManager wm;
+  
+  // Custom parameter for Server IP
+  WiFiManagerParameter custom_server_ip("serverip", "Python Server IP", fallbackServerIP.c_str(), 40);
+  wm.addParameter(&custom_server_ip);
+  
+  // Custom parameter for mDNS Hostname
+  WiFiManagerParameter custom_mdns_name("mdnsname", "PC Hostname (mDNS)", mDNSServerHostname.c_str(), 40);
+  wm.addParameter(&custom_mdns_name);
+
+  // Set timeout for the portal so it doesn't block forever if rebooted without wifi
+  wm.setConfigPortalTimeout(180); // 3 minutes
+
+  if (!wm.autoConnect("BioAlert_Setup")) {
+    Serial.println("Failed to connect or hit timeout");
+    delay(3000);
+    ESP.restart();
   }
+
   Serial.println("WiFi connected: " + WiFi.localIP().toString());
+  
+  // Save custom parameter if it was changed
+  String newIP = String(custom_server_ip.getValue());
+  if (newIP != fallbackServerIP && newIP.length() > 0) {
+    Serial.println("Saving new server IP: " + newIP);
+    preferences.putString("serverIP", newIP);
+    fallbackServerIP = newIP;
+  }
+  
+  String newMDNS = String(custom_mdns_name.getValue());
+  if (newMDNS != mDNSServerHostname && newMDNS.length() > 0) {
+    Serial.println("Saving new mDNS hostname: " + newMDNS);
+    preferences.putString("mdnsName", newMDNS);
+    mDNSServerHostname = newMDNS;
+  }
+
   blinkWiFiReady();
 
   // Start the ESP32's own mDNS responder - required before queryHost()
@@ -312,9 +351,12 @@ void loop() {
   int motion = digitalRead(PIR_PIN);
 
   if (motion == HIGH) {
+    digitalWrite(PIR_LED_PIN, HIGH);
     Serial.println("Motion detected");
 
     bool success = captureAndClassify();
+    
+    digitalWrite(PIR_LED_PIN, LOW);
 
     if (success) {
       Serial.println("Cycle complete. Waiting 10s...");
