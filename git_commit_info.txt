@@ -1,5 +1,13 @@
 Git Commit Info
 ================
+Commit Name: Implement WiFiManager for dynamic WiFi, IP, and mDNS setup; configure PIR LED on GPIO 2
+Date:        Sat Jul 4 17:32:04 2026 +0100
+Commit ID:   9b094efb028d3735d373d4e88958937e26126ebf
+
+To roll back to this commit in the future, you can run the following command in your terminal:
+git reset --hard 9b094efb028d3735d373d4e88958937e26126ebf
+
+------------------------------------------------------
 Commit Name: Fix camera buffer stale image, add power-on flash, update fallback IP
 Date:        Sat Jul 4 11:51:11 2026 +0100
 Commit ID:   5b16c58fa9cb8d8a9f7590febd7744cd660b9ee5
