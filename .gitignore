@@ -1,6 +1,40 @@
+# ─── Heavy ML data (flash drive only) ───────────────────
+ML Model & Dataset/
+dataset/
+data/
+
+# ─── Old training runs (keep only final model/) ─────────
+train_v2/
+train_v2-2/
+train_v2-3/
+train_v2-4/
+train_v2-5/
+
+# ─── Compressed archives ────────────────────────────────
+*.zip
+*.rar
+*.tar.gz
+*.gz
+
+# ─── Python cache ───────────────────────────────────────
 __pycache__/
 *.pyc
-settings.json
-.env
+*.pyo
+*.pyd
+.Python
+
+# ─── Virtual environments ───────────────────────────────
 venv/
+.venv/
+env/
+*.egg-info/
+
+# ─── Secrets and environment ────────────────────────────
+.env
+*.env
+secrets.json
+
+# ─── OS files ───────────────────────────────────────────
 .DS_Store
+Thumbs.db
+desktop.ini

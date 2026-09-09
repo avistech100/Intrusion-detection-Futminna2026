@@ -1,0 +1,11 @@
+{
+    "system_name": "BIOALERT",
+    "bot_token": "8386965667:AAHrSpRiP8SmrfvtzItUlwhsiQlznJQ5H8w",
+    "chat_id": "7228697381",
+    "telegram_enabled": true,
+    "sms_api_key": "CCBC84zax3A3Ch7i9CC26Fx52oJ03b6rlCcm5HxCAA1BgCksAnBvIeAy2wdb1781450669",
+    "sms_recipients": "07058660994",
+    "sms_sender_name": "BIOALERT",
+    "sms_enabled_animals": true,
+    "sms_enabled_humans": false
+}
