@@ -1,5 +1,3 @@
----
-
 # BioAlert — Smart Human & Animal Intrusion Detection System
 
 **BioAlert** is a smart security system designed to tell the difference between a human, an animal, or other moving objects. When someone (or something) enters a restricted area, the system captures a photo, analyzes it using Artificial Intelligence, and instantly sends an alert to your phone via SMS and Telegram.
@@ -30,10 +28,10 @@ Here is what you need to build the physical device:
 
 ---
 
-## 📂 What's in this Folder?
+## 📂 Repository Structure
 
 ```text
-BioAlert/
+Intrusion-Detection-FUT/
 ├── server.py            # The main program that receives images and runs the AI
 ├── server2.py           # An alternative version of the main program
 ├── settings.json        # Where you put your Wi-Fi and Telegram settings
@@ -50,6 +48,8 @@ BioAlert/
 ├── model/
 │   └── weights/
 │       └── best.pt          # The "brain" of the AI after learning (99.7% accurate!)
+│
+├── models/                  # Supporting model assets
 │
 └── docs/
     └── git_commit_info.txt  # History of changes made to the project
@@ -90,5 +90,3 @@ If you want to re-train the AI or see how it learned, we use **Google Colab** (a
 ## 👨‍🎓 About the Project
 
 **BioAlert** was developed by **Hassan Adewale Abdulmalik** as a Final Year Project for the Computer Science department at the **Federal University of Technology, Minna** (2025/2026 Academic Session).
-
----
